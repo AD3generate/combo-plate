@@ -1,0 +1,839 @@
+<title>The Combo Plate</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@500;700;800&family=Karla:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout concept: single-column reading flow; building blocks as a category card grid;
+   the three formulas as order-ticket style build sequences; shopping list as a checkable,
+   store-section grid that remembers state per visit via localStorage. */
+:root{
+  --bg:#EEE9DA;
+  --surface:#FBF8EF;
+  --surface-2:#F3EEDD;
+  --ink:#2B2419;
+  --ink-soft:#6B6253;
+  --chili:#B6392B;
+  --chili-soft:#D96A52;
+  --avocado:#466A3B;
+  --avocado-soft:#CFE0C3;
+  --corn:#C98A1C;
+  --line:rgba(43,36,25,0.14);
+  --line-strong:rgba(43,36,25,0.26);
+  --font-display:'Archivo Black','Archivo',Arial,sans-serif;
+  --font-head:'Archivo',Arial,sans-serif;
+  --font-body:'Karla',Georgia,serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#211B13;
+    --surface:#2B241A;
+    --surface-2:#332B1F;
+    --ink:#F2ECDC;
+    --ink-soft:#BBAF99;
+    --chili:#E06A52;
+    --chili-soft:#C94B35;
+    --avocado:#8FBE7B;
+    --avocado-soft:#3A4E33;
+    --corn:#E3AA47;
+    --line:rgba(242,236,220,0.14);
+    --line-strong:rgba(242,236,220,0.24);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#211B13;
+  --surface:#2B241A;
+  --surface-2:#332B1F;
+  --ink:#F2ECDC;
+  --ink-soft:#BBAF99;
+  --chili:#E06A52;
+  --chili-soft:#C94B35;
+  --avocado:#8FBE7B;
+  --avocado-soft:#3A4E33;
+  --corn:#E3AA47;
+  --line:rgba(242,236,220,0.14);
+  --line-strong:rgba(242,236,220,0.24);
+  color-scheme: dark;
+}
+
+*{box-sizing:border-box;}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--font-body);
+  font-size:16px;
+  line-height:1.55;
+  padding-left:max(16px, env(safe-area-inset-left,0px));
+  padding-right:max(16px, env(safe-area-inset-right,0px));
+}
+
+/* serape-stripe top band — the one bold flourish */
+.stripe{
+  display:flex;
+  height:9px;
+  width:100%;
+  margin-left:calc(-1 * max(16px, env(safe-area-inset-left,0px)));
+  margin-right:calc(-1 * max(16px, env(safe-area-inset-right,0px)));
+  width:calc(100% + max(16px, env(safe-area-inset-left,0px)) + max(16px, env(safe-area-inset-right,0px)));
+}
+.stripe span{flex:1;}
+.stripe span:nth-child(1){background:var(--chili);}
+.stripe span:nth-child(2){background:var(--corn);}
+.stripe span:nth-child(3){background:var(--avocado);}
+.stripe span:nth-child(4){background:var(--ink);}
+.stripe span:nth-child(5){background:var(--chili-soft);}
+
+/* papel-picado style scalloped divider, cut via mask — no hand-drawn SVG needed */
+.scallop{
+  height:13px;
+  width:100%;
+  background-color:var(--line-strong);
+  -webkit-mask-image:radial-gradient(circle at 9px 0, transparent 9px, black 9.5px);
+  mask-image:radial-gradient(circle at 9px 0, transparent 9px, black 9.5px);
+  -webkit-mask-size:18px 13px;
+  mask-size:18px 13px;
+  -webkit-mask-repeat:repeat-x;
+  mask-repeat:repeat-x;
+  margin-bottom:28px;
+}
+
+.wrap{max-width:860px; margin:0 auto; padding-block:0 64px;}
+h1,h2,h3{text-wrap:balance; margin:0;}
+p{margin:0;}
+.gap-xs{display:flex;flex-direction:column;gap:6px;}
+
+/* ---------- Header ---------- */
+.hero{
+  display:flex; flex-direction:column; gap:14px;
+  padding:26px 0 22px;
+}
+.eyebrow{
+  font-family:var(--font-mono);
+  font-size:12px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--chili);
+  font-weight:600;
+}
+.hero h1{
+  font-family:var(--font-display);
+  font-size:clamp(2.4rem, 7vw, 3.6rem);
+  line-height:0.98;
+  color:var(--ink);
+  letter-spacing:-0.01em;
+}
+.hero p{
+  max-width:60ch;
+  color:var(--ink-soft);
+  font-size:1.05rem;
+}
+
+/* ---------- Section headers ---------- */
+.section{margin-bottom:46px;}
+.section-head{
+  display:flex; align-items:baseline; gap:12px;
+  margin-bottom:16px;
+  flex-wrap:wrap;
+}
+.section-num{
+  font-family:var(--font-mono);
+  font-size:13px;
+  color:var(--avocado);
+  font-weight:600;
+}
+.section h2{
+  font-family:var(--font-head);
+  font-weight:800;
+  font-size:1.5rem;
+  color:var(--ink);
+}
+.section-note{
+  color:var(--ink-soft);
+  font-size:0.95rem;
+  margin-top:-6px;
+  margin-bottom:18px;
+  max-width:62ch;
+}
+
+/* ---------- Formula cards ---------- */
+.formulas{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
+}
+@media (max-width:720px){ .formulas{grid-template-columns:1fr;} }
+.formula-card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-top:3px solid var(--chili);
+  border-radius:4px;
+  padding:18px 18px 20px;
+  display:flex; flex-direction:column; gap:12px;
+  min-width:0;
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+.formula-card:nth-of-type(2){border-top-color:var(--corn);}
+.formula-card:nth-of-type(3){border-top-color:var(--avocado);}
+.formula-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 8px 20px rgba(0,0,0,0.14);
+}
+.formula-top{
+  display:flex; justify-content:space-between; align-items:flex-start; gap:8px;
+}
+.formula-name{display:flex; align-items:center; gap:9px;}
+.formula-icon{
+  color:var(--chili);
+  display:flex;
+  flex-shrink:0;
+}
+.formula-card:nth-of-type(2) .formula-icon{color:var(--corn);}
+.formula-card:nth-of-type(3) .formula-icon{color:var(--avocado);}
+.formula-title{
+  font-family:var(--font-head);
+  font-weight:800;
+  font-size:1.1rem;
+}
+.formula-time{
+  font-family:var(--font-mono);
+  font-size:12px;
+  color:var(--chili);
+  white-space:nowrap;
+  font-weight:600;
+}
+.formula-steps{
+  list-style:none; padding:0; margin:0;
+  display:flex; flex-direction:column; gap:7px;
+  counter-reset:step;
+}
+.formula-steps li{
+  counter-increment:step;
+  display:flex; gap:9px; align-items:flex-start;
+  font-size:0.92rem;
+}
+.formula-steps li::before{
+  content:counter(step);
+  font-family:var(--font-mono);
+  font-size:11px;
+  font-weight:700;
+  color:var(--surface);
+  background:var(--avocado);
+  min-width:18px; height:18px;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+  margin-top:1px;
+}
+.formula-protein{
+  margin-top:auto;
+  padding-top:10px;
+  border-top:1px dashed var(--line-strong);
+  font-family:var(--font-mono);
+  font-size:12px;
+  color:var(--ink-soft);
+}
+.formula-protein b{color:var(--avocado); font-weight:700;}
+
+/* ---------- Building block grid ---------- */
+.blocks{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+}
+@media (max-width:720px){ .blocks{grid-template-columns:repeat(2,1fr);} }
+@media (max-width:460px){ .blocks{grid-template-columns:1fr;} }
+.block-card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-top:3px solid var(--chili);
+  border-radius:4px;
+  padding:16px;
+  min-width:0;
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+.block-card:nth-child(6n+2){border-top-color:var(--corn);}
+.block-card:nth-child(6n+3){border-top-color:var(--avocado);}
+.block-card:nth-child(6n+4){border-top-color:var(--chili-soft);}
+.block-card:nth-child(6n+5){border-top-color:var(--corn);}
+.block-card:nth-child(6n+6){border-top-color:var(--avocado);}
+.block-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 8px 20px rgba(0,0,0,0.14);
+}
+.block-head{
+  display:flex; align-items:center; gap:8px;
+  margin-bottom:10px;
+  padding-bottom:8px;
+  border-bottom:2px solid var(--ink);
+}
+.block-icon{font-size:1.1rem; line-height:1;}
+.block-head h3{
+  font-family:var(--font-head);
+  font-weight:800;
+  font-size:0.95rem;
+  text-transform:uppercase;
+  letter-spacing:0.02em;
+}
+.block-list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px;}
+.block-list li{font-size:0.9rem;}
+.block-list b{display:block; font-weight:700;}
+.block-list span{color:var(--ink-soft); font-size:0.85rem;}
+
+/* ---------- Protein math callout ---------- */
+.callout{
+  background:var(--avocado-soft);
+  border:1px solid var(--line);
+  border-radius:4px;
+  padding:20px 22px;
+  display:flex; flex-direction:column; gap:10px;
+}
+.callout h3{
+  font-family:var(--font-head); font-weight:800; font-size:1.05rem;
+}
+.math-row{
+  display:flex; flex-wrap:wrap; align-items:center; gap:10px;
+  font-family:var(--font-mono);
+  font-size:0.95rem;
+  font-variant-numeric:tabular-nums;
+}
+.math-chip{
+  background:var(--surface);
+  border:1px solid var(--line-strong);
+  border-radius:3px;
+  padding:4px 10px;
+  white-space:nowrap;
+}
+.math-plus{color:var(--ink-soft); font-weight:700;}
+.math-total{
+  font-weight:700;
+  color:var(--chili);
+}
+.callout p{font-size:0.92rem; color:var(--ink-soft); max-width:62ch;}
+
+/* ---------- Shopping list ---------- */
+.list-toolbar{
+  display:flex; justify-content:space-between; align-items:center;
+  gap:14px; flex-wrap:wrap;
+  margin-bottom:16px;
+}
+.progress-wrap{
+  display:flex; align-items:center; gap:10px;
+  flex:1; min-width:150px;
+}
+.progress-track{
+  flex:1; max-width:220px;
+  height:7px;
+  background:var(--surface-2);
+  border:1px solid var(--line);
+  border-radius:99px;
+  overflow:hidden;
+}
+.progress-fill{
+  height:100%;
+  width:0%;
+  background:var(--avocado);
+  border-radius:99px;
+  transition:width .25s ease;
+}
+.progress-text{
+  font-family:var(--font-mono);
+  font-size:12px;
+  color:var(--ink-soft);
+  white-space:nowrap;
+}
+.reset-btn{
+  font-family:var(--font-mono);
+  font-size:12px;
+  background:none;
+  border:1px solid var(--line-strong);
+  border-radius:3px;
+  padding:6px 12px;
+  color:var(--ink-soft);
+  cursor:pointer;
+}
+.reset-btn:hover{ border-color:var(--chili); color:var(--chili); }
+
+/* ---------- Shopping mode ---------- */
+.fab{
+  position:fixed;
+  right:max(18px, env(safe-area-inset-right,0px));
+  bottom:max(18px, env(safe-area-inset-bottom,0px));
+  z-index:50;
+  background:var(--chili);
+  color:#FBF8EF;
+  border:none;
+  border-radius:99px;
+  padding:13px 20px;
+  font-family:var(--font-head);
+  font-weight:700;
+  font-size:0.92rem;
+  cursor:pointer;
+  box-shadow:0 8px 20px rgba(0,0,0,0.28);
+}
+.fab:active{ transform:scale(0.97); }
+body.shopping-mode .fab{ background:var(--ink); }
+
+.sticky-bar{
+  position:fixed;
+  top:0; left:0; right:0;
+  z-index:40;
+  display:none;
+  align-items:center;
+  gap:14px;
+  background:var(--surface);
+  border-bottom:1px solid var(--line-strong);
+  padding:12px max(16px, env(safe-area-inset-right,0px)) 12px max(16px, env(safe-area-inset-left,0px));
+  padding-top:max(12px, env(safe-area-inset-top,0px));
+  box-shadow:0 6px 16px rgba(0,0,0,0.1);
+}
+body.shopping-mode .sticky-bar{ display:flex; }
+.sticky-bar .progress-text{ font-size:13px; }
+
+body.shopping-mode{ padding-top:64px; }
+body.shopping-mode .hero,
+body.shopping-mode .scallop,
+body.shopping-mode .section:not(#shopping-section),
+body.shopping-mode .tip{
+  display:none;
+}
+body.shopping-mode #shopping-section .section-head,
+body.shopping-mode #shopping-section .section-note,
+body.shopping-mode .list-toolbar{
+  display:none;
+}
+body.shopping-mode .list-grid{
+  grid-template-columns:1fr;
+}
+body.shopping-mode .check-item{
+  padding:13px 2px;
+}
+body.shopping-mode .check-item input{
+  width:25px; height:25px;
+  border-radius:5px;
+}
+body.shopping-mode .check-item input:checked::after{
+  left:8px; top:2px;
+  width:7px; height:13px;
+}
+body.shopping-mode .check-item label{
+  font-size:1.02rem;
+}
+body.shopping-mode .list-card h3{
+  font-size:13px;
+}
+.list-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:14px;
+}
+@media (max-width:620px){ .list-grid{grid-template-columns:1fr;} }
+.list-card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:4px;
+  padding:16px;
+  min-width:0;
+  display:flex; flex-direction:column;
+  transition:box-shadow .15s ease;
+}
+.list-card:hover{ box-shadow:0 6px 16px rgba(0,0,0,0.1); }
+.list-card h3{
+  font-family:var(--font-mono);
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:0.1em;
+  color:var(--chili);
+  font-weight:700;
+  margin-bottom:10px;
+}
+.check-item{
+  display:flex; align-items:flex-start; gap:10px;
+  padding:6px 0;
+  border-bottom:1px solid var(--line);
+  cursor:pointer;
+}
+.check-item:last-child{border-bottom:none;}
+.check-item input{
+  appearance:none;
+  width:17px; height:17px;
+  border:1.5px solid var(--line-strong);
+  border-radius:3px;
+  margin-top:2px;
+  flex-shrink:0;
+  cursor:pointer;
+  position:relative;
+  background:var(--surface-2);
+}
+.check-item input:checked{
+  background:var(--avocado);
+  border-color:var(--avocado);
+}
+.check-item input:checked::after{
+  content:"";
+  position:absolute; left:5px; top:1px;
+  width:5px; height:9px;
+  border:solid var(--surface);
+  border-width:0 2px 2px 0;
+  transform:rotate(45deg);
+}
+.check-item label{
+  font-size:0.92rem;
+  cursor:pointer;
+}
+.check-item label span{
+  display:block;
+  font-family:var(--font-mono);
+  font-size:0.78rem;
+  color:var(--ink-soft);
+}
+.check-item input:checked ~ label{
+  text-decoration:line-through;
+  color:var(--ink-soft);
+}
+
+/* ---------- Footer tip ---------- */
+.tip{
+  border-top:3px solid var(--ink);
+  padding-top:22px;
+  display:flex; flex-direction:column; gap:8px;
+}
+.tip h3{font-family:var(--font-head); font-weight:800; font-size:1.05rem;}
+.tip p{color:var(--ink-soft); font-size:0.95rem; max-width:64ch;}
+</style>
+
+<div class="stripe"><span></span><span></span><span></span><span></span><span></span></div>
+
+<div class="sticky-bar" id="stickyBar">
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" id="stickyFill"></div></div>
+    <span class="progress-text" id="stickyText">0 of 0 in cart</span>
+  </div>
+  <button class="reset-btn" id="resetBtnSticky" type="button">Reset</button>
+</div>
+
+<button class="fab" id="modeFab" type="button">🛒 Shopping mode</button>
+
+<div class="wrap">
+
+  <header class="hero">
+    <span class="eyebrow">Standing kitchen system — built around one Trader Joe's run</span>
+    <h1>The Combo Plate</h1>
+    <p>A stocked-fridge system for Mexican-inspired tacos, quesadillas, and protein bowls — pick one item per category, combine, eat. Leans hard on Trader Joe's marinated meats, precooked proteins, and frozen shortcuts to cut the actual cook time to almost nothing.</p>
+  </header>
+  <div class="scallop"></div>
+
+  <section class="section">
+    <div class="section-head">
+      <span class="section-num">01</span>
+      <h2>Three ways to combine it</h2>
+    </div>
+    <p class="section-note">Same ingredients, three formats depending on your mood and how much time you've got. None of these are recipes — they're assembly order.</p>
+
+    <div class="formulas">
+      <div class="formula-card">
+        <div class="formula-top">
+          <span class="formula-name">
+            <span class="formula-icon"><svg viewBox="0 0 32 24" width="26" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20 A14 14 0 0 1 28 20"/><circle cx="12" cy="15" r="1.4" fill="currentColor" stroke="none"/><circle cx="18" cy="13" r="1.4" fill="currentColor" stroke="none"/><circle cx="22" cy="16" r="1.4" fill="currentColor" stroke="none"/></svg></span>
+            <span class="formula-title">Tacos</span>
+          </span>
+          <span class="formula-time">~6 min</span>
+        </div>
+        <ol class="formula-steps">
+          <li>Warm tortillas (dry skillet, 20 sec/side)</li>
+          <li>Seasoned protein in the center</li>
+          <li>Handful of cabbage slaw</li>
+          <li>Spoon of pico, squeeze of lime</li>
+          <li>Cheese or cotija on top</li>
+        </ol>
+        <div class="formula-protein">~5–6oz protein → <b>35–45g protein</b></div>
+      </div>
+
+      <div class="formula-card">
+        <div class="formula-top">
+          <span class="formula-name">
+            <span class="formula-icon"><svg viewBox="0 0 32 24" width="26" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20 L16 5 L26 20 Z"/><path d="M10 20 L16 10 L22 20" stroke-dasharray="2 3"/></svg></span>
+            <span class="formula-title">Quesadillas</span>
+          </span>
+          <span class="formula-time">~10 min</span>
+        </div>
+        <ol class="formula-steps">
+          <li>Cheese on half a flour tortilla</li>
+          <li>Protein + sautéed pepper/onion</li>
+          <li>Fold, press into dry skillet</li>
+          <li>2–3 min a side until cheese sets</li>
+          <li>Dip in salsa or Greek yogurt</li>
+        </ol>
+        <div class="formula-protein">~5–6oz protein + cheese → <b>45–55g protein</b></div>
+      </div>
+
+      <div class="formula-card">
+        <div class="formula-top">
+          <span class="formula-name">
+            <span class="formula-icon"><svg viewBox="0 0 32 24" width="26" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 10 H28"/><path d="M4 10 A12 12 0 0 0 28 10"/><circle cx="13" cy="7" r="1.3" fill="currentColor" stroke="none"/><circle cx="20" cy="7" r="1.3" fill="currentColor" stroke="none"/></svg></span>
+            <span class="formula-title">Protein bowls</span>
+          </span>
+          <span class="formula-time">~10 min</span>
+        </div>
+        <ol class="formula-steps">
+          <li>Rice or greens as the base</li>
+          <li>Protein, then black beans</li>
+          <li>Corn, pico or salsa</li>
+          <li>Avocado, squeeze of lime</li>
+          <li>Cheese to finish</li>
+        </ol>
+        <div class="formula-protein">~6oz protein + beans → <b>50–60g protein</b></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <span class="section-num">02</span>
+      <h2>The building blocks</h2>
+    </div>
+    <p class="section-note">Keep two or three proteins active at a time and rotate. Marinated and frozen are fully in play here — a real marinated steak or a bag of frozen roasted corn is still real food, and the whole point is cutting steps, not purity-testing the fridge.</p>
+
+    <div class="blocks">
+      <div class="block-card">
+        <div class="block-head"><span class="block-icon">🥩</span><h3>Protein</h3></div>
+        <ul class="block-list">
+          <li><b>TJ's Carne Asada Autentica</b><span>refrigerated, marinated steak strips — 5 min sear</span></li>
+          <li><b>TJ's Al Pastor</b><span>refrigerated, marinated pork — 6–8 min sear, built for tacos</span></li>
+          <li><b>TJ's Chili Lime Chicken Thighs</b><span>refrigerated, marinated — pan or oven, ~12 min</span></li>
+          <li><b>TJ's Carnitas or Cuban Style Picadillo</b><span>refrigerated, already fully cooked — 2 min to reheat</span></li>
+          <li><b>TJ's Argentinian Red Shrimp or Just Chicken</b><span>frozen — 4 min raw shrimp, 2 min precooked chicken</span></li>
+          <li><b>Black beans, canned</b><span>stir into anything, zero cook time</span></li>
+        </ul>
+      </div>
+
+      <div class="block-card">
+        <div class="block-head"><span class="block-icon">🌶️</span><h3>Flavor engine</h3></div>
+        <ul class="block-list">
+          <li><b>TJ's Taco Seasoning Mix</b><span>packet, only needed for plain/raw protein — the marinated stuff is already seasoned</span></li>
+          <li><b>TJ's Salsa Autentica or Double Roasted Salsa</b><span>sauce, marinade, and dressing in one jar</span></li>
+          <li><b>TJ's Salsa Verde</b><span>spoon over anything that needs brightness</span></li>
+          <li><b>Lime</b><span>finishes everything</span></li>
+        </ul>
+      </div>
+
+      <div class="block-card">
+        <div class="block-head"><span class="block-icon">🥬</span><h3>Produce</h3></div>
+        <ul class="block-list">
+          <li><b>Shredded cabbage</b><span>crunch, keeps 2 weeks, no knife work</span></li>
+          <li><b>TJ's Pico de Gallo</b><span>refrigerated case, zero prep garnish</span></li>
+          <li><b>TJ's frozen pepper &amp; onion strips</b><span>skip the knife entirely — swap in whatever frozen fajita-style mix is in stock</span></li>
+          <li><b>TJ's frozen fire-roasted corn</b><span>elote flavor with zero prep</span></li>
+          <li><b>Hass avocados</b><span>fat and texture, no effort</span></li>
+        </ul>
+      </div>
+
+      <div class="block-card">
+        <div class="block-head"><span class="block-icon">🌽</span><h3>Base</h3></div>
+        <ul class="block-list">
+          <li><b>TJ's Handmade Flour Tortillas</b><span>quesadillas — the good ones</span></li>
+          <li><b>TJ's Corn Tortillas</b><span>tacos</span></li>
+          <li><b>TJ's Frozen Organic Brown Rice</b><span>3-min microwave bag, zero-effort bowl base</span></li>
+          <li><b>TJ's Organic Baby Spinach</b><span>bowl base when you want greens instead</span></li>
+        </ul>
+      </div>
+
+      <div class="block-card">
+        <div class="block-head"><span class="block-icon">🧀</span><h3>Dairy &amp; finishers</h3></div>
+        <ul class="block-list">
+          <li><b>TJ's Shredded Mexican Blend</b><span>melts for quesadillas, tops everything else</span></li>
+          <li><b>TJ's Plain Greek Yogurt (2% or nonfat)</b><span>sour cream swap — adds protein instead of just fat</span></li>
+          <li><b>TJ's Cotija</b><span>crumbly, salty finish — optional but worth it</span></li>
+          <li><b>TJ's Guacamole</b><span>backup for when avocados aren't ripe yet</span></li>
+        </ul>
+      </div>
+
+      <div class="block-card">
+        <div class="block-head"><span class="block-icon">🥫</span><h3>Pantry</h3></div>
+        <ul class="block-list">
+          <li><b>TJ's Black Beans, 2–3 cans</b><span>rinse before using — cuts the sodium</span></li>
+          <li><b>TJ's Fire Roasted Diced Tomatoes</b><span>2 min simmered with ground beef = instant filling</span></li>
+          <li><b>TJ's Avocado Oil</b><span>high-heat searing</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="scallop"></div>
+
+  <section class="section">
+    <div class="section-head">
+      <span class="section-num">03</span>
+      <h2>Protein without counting anything</h2>
+    </div>
+    <div class="callout">
+      <h3>The stack you're actually hitting</h3>
+      <div class="math-row">
+        <span class="math-chip">5–6oz protein ≈ 35–45g</span>
+        <span class="math-plus">+</span>
+        <span class="math-chip">½ cup black beans ≈ 7–8g</span>
+        <span class="math-plus">+</span>
+        <span class="math-chip">cheese or yogurt ≈ 5–10g</span>
+        <span class="math-plus">=</span>
+        <span class="math-total">50–60g in one sitting</span>
+      </div>
+      <p>Two of these a day plus your existing shake and yogurt snack clears your ~138g target without ever opening an app. Build the bowl version when you want the beans in — it's the easiest way to stack an extra 10g without extra cooking.</p>
+    </div>
+  </section>
+
+  <div class="scallop"></div>
+
+  <section class="section" id="shopping-section">
+    <div class="section-head">
+      <span class="section-num">04</span>
+      <h2>Standing shopping list</h2>
+    </div>
+    <p class="section-note">Covers roughly a week of mixing and matching. Check off what you grab — it resets itself next trip. Tap <b>Shopping mode</b> (bottom right) for a bigger, store-friendly view that checked items sink out of the way in.</p>
+    <div class="list-toolbar">
+      <div class="progress-wrap">
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        <span class="progress-text" id="progressText">0 of 0 in cart</span>
+      </div>
+      <button class="reset-btn" id="resetBtn" type="button">Reset for next trip</button>
+    </div>
+
+    <div class="list-grid" id="listGrid">
+
+      <div class="list-card">
+        <h3>Produce &amp; frozen veg</h3>
+        <div class="check-item"><input type="checkbox" id="i1"><label for="i1">Shredded cabbage<span>1 bag</span></label></div>
+        <div class="check-item"><input type="checkbox" id="i2"><label for="i2">Hass avocados<span>3–4</span></label></div>
+        <div class="check-item"><input type="checkbox" id="i3"><label for="i3">Limes<span>bag of 4–5</span></label></div>
+        <div class="check-item"><input type="checkbox" id="i4"><label for="i4">Cilantro<span>1 bunch</span></label></div>
+        <div class="check-item"><input type="checkbox" id="i5"><label for="i5">Yellow onion + garlic<span>1 each</span></label></div>
+        <div class="check-item"><input type="checkbox" id="i6"><label for="i6">TJ's Pico de Gallo<span>1 tub, refrigerated case</span></label></div>
+        <div class="check-item"><input type="checkbox" id="i6b"><label for="i6b">TJ's frozen pepper &amp; onion strips<span>1 bag — whatever's in stock</span></label></div>
+        <div class="check-item"><input type="checkbox" id="i6c"><label for="i6c">TJ's frozen fire-roasted corn<span>1 bag</span></label></div>
+        <div class="check-item"><input type="checkbox" id="i8"><label for="i8">TJ's Organic Baby Spinach<span>1 bag</span></label></div>
+      </div>
+
+      <div class="list-card">
+        <h3>Protein <span style="font-weight:500;text-transform:none;letter-spacing:0;color:var(--ink-soft);">— pick 2–3 per trip</span></h3>
+        <div class="check-item"><input type="checkbox" id="i9a"><label for="i9a">TJ's Carne Asada Autentica<span>1 package, refrigerated</span></label></div>
+        <div class="check-item"><input type="checkbox" id="i9b"><label for="i9b">TJ's Al Pastor<span>1 package, refrigerated</span></label></div>
+        <div class="check-item"><input type="checkbox" id="i9c"><label for="i9c">TJ's Chili Lime Chicken Thighs<span>1 package, refrigerated</span></label></div>
+        <div class="check-item"><input type="checkbox" id="i9"><label for="i9">TJ's Carnitas or Cuban Style Picadillo<span>1 tub, refrigerated</span></label></div>
+        <div class="check-item"><input type="checkbox" id="i11"><label for="i11">TJ's Argentinian Red Shrimp<span>1 bag, frozen</span></label></div>
+        <div class="check-item"><input type="checkbox" id="i11b"><label for="i11b">TJ's Just Chicken<span>1 bag, frozen</span></label></div>
+      </div>
+
+      <div class="list-card">
+        <h3>Dairy</h3>
+        <div class="check-item"><input type="checkbox" id="i12"><label for="i12">TJ's Shredded Mexican Blend<span>1 bag</span></label></div>
+        <div class="check-item"><input type="checkbox" id="i13"><label for="i13">TJ's Plain Greek Yogurt<span>1 tub</span></label></div>
+        <div class="check-item"><input type="checkbox" id="i14"><label for="i14">TJ's Cotija<span>1 container, optional</span></label></div>
+        <div class="check-item"><input type="checkbox" id="i14b"><label for="i14b">TJ's Guacamole<span>1–2 tubs, optional backup</span></label></div>
+      </div>
+
+      <div class="list-card">
+        <h3>Pantry &amp; dry</h3>
+        <div class="check-item"><input type="checkbox" id="i15"><label for="i15">TJ's Corn Tortillas<span>1 pack</span></label></div>
+        <div class="check-item"><input type="checkbox" id="i16"><label for="i16">TJ's Handmade Flour Tortillas<span>1 pack</span></label></div>
+        <div class="check-item"><input type="checkbox" id="i17"><label for="i17">TJ's Black Beans, canned<span>3 cans</span></label></div>
+        <div class="check-item"><input type="checkbox" id="i19"><label for="i19">TJ's Fire Roasted Diced Tomatoes<span>2 cans</span></label></div>
+        <div class="check-item"><input type="checkbox" id="i20"><label for="i20">TJ's Frozen Organic Brown Rice<span>1 box</span></label></div>
+        <div class="check-item"><input type="checkbox" id="i21"><label for="i21">TJ's Taco Seasoning Mix<span>1–2 packets</span></label></div>
+      </div>
+
+      <div class="list-card">
+        <h3>Condiments &amp; spices</h3>
+        <div class="check-item"><input type="checkbox" id="i22"><label for="i22">TJ's Salsa Verde<span>1 jar</span></label></div>
+        <div class="check-item"><input type="checkbox" id="i23"><label for="i23">TJ's Salsa Autentica or Double Roasted Salsa<span>1 jar</span></label></div>
+        <div class="check-item"><input type="checkbox" id="i24"><label for="i24">Hot sauce<span>whatever you like</span></label></div>
+        <div class="check-item"><input type="checkbox" id="i25"><label for="i25">TJ's Avocado Oil<span>if low</span></label></div>
+        <div class="check-item"><input type="checkbox" id="i26"><label for="i26">Cumin, chili powder, smoked paprika, garlic + onion powder, oregano<span>only if restocking and skipping the seasoning packet</span></label></div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="scallop"></div>
+
+  <div class="tip">
+    <h3>Why this works built around Trader Joe's</h3>
+    <p>The carnitas and picadillo are fully cooked, and the carne asada, al pastor, and chili lime thighs arrive already marinated — the flavor work is done before you ever touch a pan. Real protein, real marinade, no spice rack required. That's not a compromise on the healthy-eating front; it's just where the convenience happens to live.</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var KEY = 'combo-plate-checklist-v1';
+  var MODE_KEY = 'combo-plate-mode-v1';
+  var boxes = document.querySelectorAll('.check-item input[type="checkbox"]');
+  var saved = {};
+  try{
+    saved = JSON.parse(localStorage.getItem(KEY) || '{}');
+  }catch(e){ saved = {}; }
+
+  function updateOrder(box){
+    var row = box.closest('.check-item');
+    if(row) row.style.order = box.checked ? '2' : '1';
+  }
+
+  function updateProgress(){
+    var total = boxes.length;
+    var done = 0;
+    boxes.forEach(function(box){ if(box.checked) done++; });
+    var pct = total ? Math.round((done/total)*100) : 0;
+    var label = done + ' of ' + total + ' in cart';
+    ['progressFill','stickyFill'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) el.style.width = pct + '%';
+    });
+    ['progressText','stickyText'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) el.textContent = label;
+    });
+  }
+
+  boxes.forEach(function(box){
+    if(saved[box.id]) box.checked = true;
+    updateOrder(box);
+    box.addEventListener('change', function(){
+      try{
+        var state = JSON.parse(localStorage.getItem(KEY) || '{}');
+        state[box.id] = box.checked;
+        localStorage.setItem(KEY, JSON.stringify(state));
+      }catch(e){}
+      updateOrder(box);
+      updateProgress();
+    });
+  });
+  updateProgress();
+
+  function resetAll(){
+    boxes.forEach(function(box){ box.checked = false; updateOrder(box); });
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    updateProgress();
+  }
+  var resetBtn = document.getElementById('resetBtn');
+  if(resetBtn) resetBtn.addEventListener('click', resetAll);
+  var resetBtnSticky = document.getElementById('resetBtnSticky');
+  if(resetBtnSticky) resetBtnSticky.addEventListener('click', resetAll);
+
+  var modeFab = document.getElementById('modeFab');
+  function setMode(on){
+    document.body.classList.toggle('shopping-mode', on);
+    if(modeFab) modeFab.textContent = on ? '✕ Exit shopping mode' : '🛒 Shopping mode';
+    try{ localStorage.setItem(MODE_KEY, on ? '1' : '0'); }catch(e){}
+    if(on) window.scrollTo(0,0);
+  }
+  var modeOn = false;
+  try{ modeOn = localStorage.getItem(MODE_KEY) === '1'; }catch(e){}
+  setMode(modeOn);
+  if(modeFab) modeFab.addEventListener('click', function(){
+    setMode(!document.body.classList.contains('shopping-mode'));
+  });
+
+  if(window.claude && window.claude.hot){
+    var start = function(data){};
+    window.claude.hot.ready ? window.claude.hot.ready(start) : start({});
+  }
+})();
+</script>
