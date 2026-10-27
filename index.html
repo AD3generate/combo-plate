@@ -1,5 +1,17 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>The Combo Plate</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#B6392B">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Combo Plate">
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@500;700;800&family=Karla:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
 /* Layout concept: single-column reading flow; building blocks as a category card grid;
@@ -58,6 +70,7 @@
 }
 
 *{box-sizing:border-box;}
+html,body{margin:0; padding:0;}
 body{
   background:var(--bg);
   color:var(--ink);
@@ -501,6 +514,8 @@ body.shopping-mode .list-card h3{
 .tip h3{font-family:var(--font-head); font-weight:800; font-size:1.05rem;}
 .tip p{color:var(--ink-soft); font-size:0.95rem; max-width:64ch;}
 </style>
+</head>
+<body>
 
 <div class="stripe"><span></span><span></span><span></span><span></span><span></span></div>
 
@@ -831,9 +846,13 @@ body.shopping-mode .list-card h3{
     setMode(!document.body.classList.contains('shopping-mode'));
   });
 
-  if(window.claude && window.claude.hot){
-    var start = function(data){};
-    window.claude.hot.ready ? window.claude.hot.ready(start) : start({});
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('sw.js').catch(function(){});
+    });
   }
 })();
 </script>
+
+</body>
+</html>
